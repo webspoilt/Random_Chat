@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ChatSession {
+  id              String   @id @default(cuid())
+  user1Id         String
+  user2Id         String?
+  user1IP         String
+  user2IP         String?
+  startTime       DateTime @default(now())
+  endTime         DateTime?
+  mode            String   // "video" or "text"
+  interests       String   // comma-separated tags
+  status          String   // "waiting", "matched", "ended"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Ban {
+  id          String   @id @default(cuid())
+  ipAddress   String   @unique
+  reason      String   // "nudity", "porn", "gun", "abusive_language", "other"
+  count       Int      @default(1)
+  bannedAt    DateTime @default(now())
+  expiresAt   DateTime?
+  permanent   Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Report {
+  id           String   @id @default(cuid())
+  sessionId    String
+  reporterIP   String
+  reportedIP   String
+  reason       String   // "nudity", "porn", "gun", "abusive_language", "other"
+  description  String?
+  status       String   @default("pending") // "pending", "reviewed", "resolved"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Violation {
+  id           String   @id @default(cuid())
+  sessionId    String
+  userIP       String
+  type         String   // "nudity", "porn", "gun", "abusive_language", "other"
+  contentData  String?  // base64 image data or text content
+  detectedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+}
+
+model AdImpression {
+  id          String   @id @default(cuid())
+  sessionId   String?
+  ipAddress   String
+  adId        String
+  placement   String   // "banner", "modal", "sidebar"
+  impression  Boolean  @default(true)
+  click       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
